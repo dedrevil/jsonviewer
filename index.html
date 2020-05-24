@@ -1,579 +1,639 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<link rel="apple-touch-icon" type="image/png" href="https://static.codepen.io/assets/favicon/apple-touch-icon-5ae1a0698dcc2402e9712f7d01ed509a57814f994c660df9f7a952f3060705ee.png" />
-<meta name="apple-mobile-web-app-title" content="CodePen">
-<link rel="shortcut icon" type="image/x-icon" href="https://static.codepen.io/assets/favicon/favicon-aec34940fbc1a6e787974dcd360f2c6b63348d4b1f4e06c77743096d55480f33.ico" />
-<link rel="mask-icon" type="" href="https://static.codepen.io/assets/favicon/logo-pin-8f3771b1072e3c38bd662872f6b673a722f4b3ca2421637d5596661b4e2132cc.svg" color="#111" />
-<title>JSON Formatter with Tree View</title>
-<style>
+	<meta charset="UTF-8">
+	<link rel="apple-touch-icon"
+		href="https://i2.wp.com/poopcode.com/wp-content/uploads/2019/09/cropped-siteicon-1.png?fit=180%2C180&#038;ssl=1" />
+	<meta name="apple-mobile-web-app-title" content="JSON Viewer Poopcode">
+	<link rel="icon"
+		href="https://i2.wp.com/poopcode.com/wp-content/uploads/2019/09/cropped-siteicon-1.png?fit=32%2C32&#038;ssl=1"
+		sizes="32x32" />
+	<link rel="icon"
+		href="https://i2.wp.com/poopcode.com/wp-content/uploads/2019/09/cropped-siteicon-1.png?fit=192%2C192&#038;ssl=1"
+		sizes="192x192" />
 
-#window{
-  width: 96%;
-  height: 96%;
-  background: #d9d9d9;
-  margin: 0 auto;
-  margin: 2%;
-  border-radius: 3px;
-  padding: 12px 0;
-  font-family: Verdana, sans-serif;
-  color: #333;
-  cursor: default;
-  box-shadow: 0 0 16px -2px rgba(50,50,50,.5);
-}
+	<title>JSON Formatter with Tree View</title>
+	<style>
+		#window {
+			width: 96%;
+			height: 96%;
+			background: #d9d9d9;
+			margin: 0 auto;
+			margin: 2%;
+			border-radius: 3px;
+			padding: 12px 0;
+			font-family: Verdana, sans-serif;
+			color: #333;
+			cursor: default;
+			box-shadow: 0 0 16px -2px rgba(50, 50, 50, .5);
+		}
 
-#buttons{
-  float: right;
-  margin-right: 12px;
-   border-radius: 10%;
-  display: inline-block;
-  transition: background .3s;
-  -webkit-transition: background .3s;
-}
+		#buttons {
+			float: right;
+			margin-right: 12px;
+			border-radius: 10%;
+			display: inline-block;
+			transition: background .3s;
+			-webkit-transition: background .3s;
+		}
 
-#butt2ons:hover{
- opacity: 0.75;
-  cursor: pointer;
-}
+		#butt2ons:hover {
+			opacity: 0.75;
+			cursor: pointer;
+		}
 
 
-#load{background: #3a3a3a;}
-#collapse{background: #3a3a3a;}
-#expand{background: #3a3a3a;}
-#reset{background: #3a3a3a;}
-#load:hover{background: #1a4;}
-#collapse:hover{background: #aa1;}
-#expand:hover{background: #a11;}
-#reset:hover{background: #453;}
+		#load {
+			background: #3a3a3a;
+		}
 
-#title{
-  margin-left: 12px;
-  font-size: 90%;
-}
+		#collapse {
+			background: #3a3a3a;
+		}
 
-textarea{
-  width: 96%;
-  height: 500px;
-  background: #efefef;
-  margin-top: 10px;
-  border: 0;
-  padding: 2%;
-  font-family: Verdana, sans-serif;
-  font-size: 95%;
-  line-height: 24px;
-  color: #333;
-  overflow: auto;
-}
-input, textarea {
-  display: block;
-  outline: 0;
-  border: 0;
-}
-input:focus, textarea:focus {
-  transition: 0.2s;
-}
-body {
-  background-color: #3a3a3a;
-  font-family: 'Open Sans', Helvetica, sans-serif;
-}
+		#expand {
+			background: #3a3a3a;
+		}
 
-.form__label {
-  display: block;
-  margin-bottom: 0.625em;
-}
-.form__label--hidden {
-  border: 0;
-  clip: rect(0 0 0 0);
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  padding: 0;
-  position: absolute;
-  width: 1px;
-}
-.form__input {
-  width: 100%;
-   height: 100%; 
-  font-size: 1em;
-  padding: 0.83333em;
-  margin-bottom: 5px;
-  border: 6px solid #05bcaf;
-  border-radius: 0.4em;
-  background: #ebecec;
-  color: #656D78;
-  font-weight: 300;
-}
-.form__modal {
-  width: 83%;
-  font-size: 1em;
-  padding: 0.83333em;
-  margin-bottom: 5px;
-  border-bottom: 6px solid #05bcaf;
-  border-radius: 0.4em;
-  background: #ebecec;
-  color: #656D78;
-  font-weight: 300;
-}
+		#reset {
+			background: #3a3a3a;
+		}
 
-[type^="button"] {
-   margin-bottom: 1.42857em; 
-  width: 120px;
-  margin-right: 0.625em;
-  outline:none;
-}
-.json-viewer {
-  display: inline-block;
-  overflow: scroll;
-  height:  96%;
-  width: 96%;
-	color: #656D78;
-  padding: 20px 20px 20px 20px;
-  background-color: #ebecec;
-  border: 6px solid #3a3a3a;
-  border-radius: 0.4em;
-  margin-left: 9px;
-  margin-bottom: 3px;
-}
+		#load:hover {
+			background: #1a4;
+		}
 
-.json-viewer ul {
-	list-style-type: none;
-	margin: 0;
-	margin: 0 0 0 1px;
-	border-left: 3px dotted #ccc;
-	padding-left: 2em;
-}
+		#collapse:hover {
+			background: #aa1;
+		}
 
-.json-viewer .hide {
-	display: none;
-}
+		#expand:hover {
+			background: #a11;
+		}
 
-.json-viewer ul li .type-string,
-.json-viewer ul li .type-date {
-	color:  #05bcaf;
-}
+		#reset:hover {
+			background: #453;
+		}
 
-.json-viewer ul li .type-boolean {
-	color: #F6BB42;
-	font-weight: bold;
-}
+		#title {
+			margin-left: 12px;
+			font-size: 90%;
+		}
 
-.json-viewer ul li .type-number {
-	color:   #e87376;
-}
+		textarea {
+			width: 96%;
+			height: 500px;
+			background: #efefef;
+			margin-top: 10px;
+			border: 0;
+			padding: 2%;
+			font-family: Verdana, sans-serif;
+			font-size: 95%;
+			line-height: 24px;
+			color: #333;
+			overflow: auto;
+		}
 
-.json-viewer ul li .type-null {
-	color: #EC87C0;
-}
+		input,
+		textarea {
+			display: block;
+			outline: 0;
+			border: 0;
+		}
 
-.json-viewer a.list-link {
-	color: #656D78;
-	text-decoration: none;
-	position: relative;
-}
+		input:focus,
+		textarea:focus {
+			transition: 0.2s;
+		}
 
-.json-viewer a.list-link:before {
-	color: #aaa;
-	content: "\25BC";
-	position: absolute;
-	display: inline-block;
-	width: 1em;
-	left: -1em;
-}
+		body {
+			background-color: #3a3a3a;
+			font-family: 'Open Sans', Helvetica, sans-serif;
+		}
 
-.json-viewer a.list-link.collapsed:before {
-	content: "\25B6";
-}
+		.form__label {
+			display: block;
+			margin-bottom: 0.625em;
+		}
 
-.json-viewer a.list-link.empty:before {
-	content: "";
-}
+		.form__label--hidden {
+			border: 0;
+			clip: rect(0 0 0 0);
+			height: 1px;
+			margin: -1px;
+			overflow: hidden;
+			padding: 0;
+			position: absolute;
+			width: 1px;
+		}
 
-.json-viewer .items-ph {
-	color: #aaa;
-	padding: 0 1em;
-}
+		.form__input {
+			width: 100%;
+			height: 100%;
+			font-size: 1em;
+			padding: 0.83333em;
+			margin-bottom: 5px;
+			border: 6px solid #05bcaf;
+			border-radius: 0.4em;
+			background: #ebecec;
+			color: #656D78;
+			font-weight: 300;
+		}
 
-.json-viewer .items-ph:hover {
-	text-decoration: underline;
-}
-</style>
-<script>
-  window.console = window.console || function(t) {};
-</script>
-<script>
-  if (document.location.search.match(/type=embed/gi)) {
-    window.parent.postMessage("resize", "*");
-  }
-</script>
+		.form__modal {
+			width: 83%;
+			font-size: 1em;
+			padding: 0.83333em;
+			margin-bottom: 5px;
+			border-bottom: 6px solid #05bcaf;
+			border-radius: 0.4em;
+			background: #ebecec;
+			color: #656D78;
+			font-weight: 300;
+		}
+
+		[type^="button"] {
+			margin-bottom: 1.42857em;
+			width: 120px;
+			margin-right: 0.625em;
+			outline: none;
+		}
+
+		.json-viewer {
+			display: inline-block;
+			overflow: scroll;
+			height: 96%;
+			width: 96%;
+			color: #656D78;
+			padding: 20px 20px 20px 20px;
+			background-color: #ebecec;
+			border: 6px solid #3a3a3a;
+			border-radius: 0.4em;
+			margin-left: 9px;
+			margin-bottom: 3px;
+		}
+
+		.json-viewer ul {
+			list-style-type: none;
+			margin: 0;
+			margin: 0 0 0 1px;
+			border-left: 3px dotted #ccc;
+			padding-left: 2em;
+		}
+
+		.json-viewer .hide {
+			display: none;
+		}
+
+		.json-viewer ul li .type-string,
+		.json-viewer ul li .type-date {
+			color: #05bcaf;
+		}
+
+		.json-viewer ul li .type-boolean {
+			color: #F6BB42;
+			font-weight: bold;
+		}
+
+		.json-viewer ul li .type-number {
+			color: #e87376;
+		}
+
+		.json-viewer ul li .type-null {
+			color: #EC87C0;
+		}
+
+		.json-viewer a.list-link {
+			color: #656D78;
+			text-decoration: none;
+			position: relative;
+		}
+
+		.json-viewer a.list-link:before {
+			color: #aaa;
+			content: "\25BC";
+			position: absolute;
+			display: inline-block;
+			width: 1em;
+			left: -1em;
+		}
+
+		.json-viewer a.list-link.collapsed:before {
+			content: "\25B6";
+		}
+
+		.json-viewer a.list-link.empty:before {
+			content: "";
+		}
+
+		.json-viewer .items-ph {
+			color: #aaa;
+			padding: 0 1em;
+		}
+
+		.json-viewer .items-ph:hover {
+			text-decoration: underline;
+		}
+	</style>
+	<script>
+		window.console = window.console || function (t) { };
+	</script>
+	<script>
+		if (document.location.search.match(/type=embed/gi)) {
+			window.parent.postMessage("resize", "*");
+		}
+	</script>
 </head>
+
 <body translate="no">
-<html>
-<head>
-<script>
-  JSONViewer = (function() {
-	var JSONViewer = function() {
-		this._dom = {};
-		this._dom.container = document.createElement("pre");
-		this._dom.container.classList.add("json-viewer");
-	};
-	JSONViewer.prototype.showJSON = function(json, maxLvl, colAt) {
-		maxLvl = typeof maxLvl === "number" ? maxLvl : -1; // max level
-		colAt = typeof colAt === "number" ? colAt : -1; // collapse at
+	<html>
 
-		var jsonData = this._processInput(json);
-		var walkEl = this._walk(jsonData, maxLvl, colAt, 0);
+	<head>
+		<script>
+			JSONViewer = (function () {
+				var JSONViewer = function () {
+					this._dom = {};
+					this._dom.container = document.createElement("pre");
+					this._dom.container.classList.add("json-viewer");
+				};
+				JSONViewer.prototype.showJSON = function (json, maxLvl, colAt) {
+					maxLvl = typeof maxLvl === "number" ? maxLvl : -1; // max level
+					colAt = typeof colAt === "number" ? colAt : -1; // collapse at
 
-		this._dom.container.innerHTML = "";
-		this._dom.container.appendChild(walkEl);
-	};
+					var jsonData = this._processInput(json);
+					var walkEl = this._walk(jsonData, maxLvl, colAt, 0);
 
-	/**
-	 * Get container with pre object - this container is used for visualise JSON data.
-	 * 
-	 * @return {Element}
-	 */
-	JSONViewer.prototype.getContainer = function() {
-		return this._dom.container;
-	};
+					this._dom.container.innerHTML = "";
+					this._dom.container.appendChild(walkEl);
+				};
 
-	/**
-	 * Process input JSON - throws exception for unrecognized input.
-	 * 
-	 * @param {Object|Array} json Input value
-	 * @return {Object|Array}
-	 */
-	JSONViewer.prototype._processInput = function(json) {
-		if (json && typeof json === "object") {
-			return json;
-		}
-		else {
-			throw "Input value is not object or array!";
-		}
-	};
+				/**
+				 * Get container with pre object - this container is used for visualise JSON data.
+				 * 
+				 * @return {Element}
+				 */
+				JSONViewer.prototype.getContainer = function () {
+					return this._dom.container;
+				};
 
-	/**
-	 * Recursive walk for input value.
-	 * 
-	 * @param {Object|Array} value Input value
-	 * @param {Number} maxLvl Process only to max level, where 0..n, -1 unlimited
-	 * @param {Number} colAt Collapse at level, where 0..n, -1 unlimited
-	 * @param {Number} lvl Current level
-	 */
-	JSONViewer.prototype._walk = function(value, maxLvl, colAt, lvl) {
-		var frag = document.createDocumentFragment();
-		var isMaxLvl = maxLvl >= 0 && lvl >= maxLvl;
-		var isCollapse = colAt >= 0 && lvl >= colAt;
-
-		switch (typeof value) {
-			case "object":
-				if (value) {
-					var isArray = Array.isArray(value);
-					var items = isArray ? value : Object.keys(value);
-
-					if (lvl === 0) {
-						// root level
-						var rootCount = this._createItemsCount(items.length);
-						// hide/show
-						var rootLink = this._createLink(isArray ? "[" : "{");
-
-						if (items.length) {
-							rootLink.addEventListener("click", function() {
-								if (isMaxLvl) return;
-
-								rootLink.classList.toggle("collapsed");
-								rootCount.classList.toggle("hide");
-
-								// main list
-								this._dom.container.querySelector("ul").classList.toggle("hide");
-							}.bind(this));
-
-							if (isCollapse) {
-								rootLink.classList.add("collapsed");
-								rootCount.classList.remove("hide");
-							}
-						}
-						else {
-							rootLink.classList.add("empty");
-						}
-
-						rootLink.appendChild(rootCount);
-						frag.appendChild(rootLink);
+				/**
+				 * Process input JSON - throws exception for unrecognized input.
+				 * 
+				 * @param {Object|Array} json Input value
+				 * @return {Object|Array}
+				 */
+				JSONViewer.prototype._processInput = function (json) {
+					if (json && typeof json === "object") {
+						return json;
 					}
+					else {
+						throw "Input value is not object or array!";
+					}
+				};
 
-					if (items.length && !isMaxLvl) {
-						var len = items.length - 1;
-						var ulList = document.createElement("ul");
-						ulList.setAttribute("data-level", lvl);
-						ulList.classList.add("type-" + (isArray ? "array" : "object"));
+				/**
+				 * Recursive walk for input value.
+				 * 
+				 * @param {Object|Array} value Input value
+				 * @param {Number} maxLvl Process only to max level, where 0..n, -1 unlimited
+				 * @param {Number} colAt Collapse at level, where 0..n, -1 unlimited
+				 * @param {Number} lvl Current level
+				 */
+				JSONViewer.prototype._walk = function (value, maxLvl, colAt, lvl) {
+					var frag = document.createDocumentFragment();
+					var isMaxLvl = maxLvl >= 0 && lvl >= maxLvl;
+					var isCollapse = colAt >= 0 && lvl >= colAt;
 
-						items.forEach(function(key, ind) {
-							var item = isArray ? key : value[key];
-							var li = document.createElement("li");
+					switch (typeof value) {
+						case "object":
+							if (value) {
+								var isArray = Array.isArray(value);
+								var items = isArray ? value : Object.keys(value);
 
-							if (typeof item === "object") {
-								var isEmpty = false;
+								if (lvl === 0) {
+									// root level
+									var rootCount = this._createItemsCount(items.length);
+									// hide/show
+									var rootLink = this._createLink(isArray ? "[" : "{");
 
-								// null && date
-								if (!item || item instanceof Date) {
-									li.appendChild(document.createTextNode(isArray ? "" : key + ": "));
-									li.appendChild(this._createSimple(item ? item : null));
-								}
-								// array & object
-								else {
-									var itemIsArray = Array.isArray(item);
-									var itemLen = itemIsArray ? item.length : Object.keys(item).length;
+									if (items.length) {
+										rootLink.addEventListener("click", function () {
+											if (isMaxLvl) return;
 
-									// empty
-									if (!itemLen) {
-										li.appendChild(document.createTextNode(key + ": " + (itemIsArray ? "[]" : "{}")));
+											rootLink.classList.toggle("collapsed");
+											rootCount.classList.toggle("hide");
+
+											// main list
+											this._dom.container.querySelector("ul").classList.toggle("hide");
+										}.bind(this));
+
+										if (isCollapse) {
+											rootLink.classList.add("collapsed");
+											rootCount.classList.remove("hide");
+										}
 									}
 									else {
-										// 1+ items
-										var itemTitle = (typeof key === "string" ? key + ": " : "") + (itemIsArray ? "[" : "{");
-										var itemLink = this._createLink(itemTitle);
-										var itemsCount = this._createItemsCount(itemLen);
+										rootLink.classList.add("empty");
+									}
 
-										// maxLvl - only text, no link
-										if (maxLvl >= 0 && lvl + 1 >= maxLvl) {
-											li.appendChild(document.createTextNode(itemTitle));
+									rootLink.appendChild(rootCount);
+									frag.appendChild(rootLink);
+								}
+
+								if (items.length && !isMaxLvl) {
+									var len = items.length - 1;
+									var ulList = document.createElement("ul");
+									ulList.setAttribute("data-level", lvl);
+									ulList.classList.add("type-" + (isArray ? "array" : "object"));
+
+									items.forEach(function (key, ind) {
+										var item = isArray ? key : value[key];
+										var li = document.createElement("li");
+
+										if (typeof item === "object") {
+											var isEmpty = false;
+
+											// null && date
+											if (!item || item instanceof Date) {
+												li.appendChild(document.createTextNode(isArray ? "" : key + ": "));
+												li.appendChild(this._createSimple(item ? item : null));
+											}
+											// array & object
+											else {
+												var itemIsArray = Array.isArray(item);
+												var itemLen = itemIsArray ? item.length : Object.keys(item).length;
+
+												// empty
+												if (!itemLen) {
+													li.appendChild(document.createTextNode(key + ": " + (itemIsArray ? "[]" : "{}")));
+												}
+												else {
+													// 1+ items
+													var itemTitle = (typeof key === "string" ? key + ": " : "") + (itemIsArray ? "[" : "{");
+													var itemLink = this._createLink(itemTitle);
+													var itemsCount = this._createItemsCount(itemLen);
+
+													// maxLvl - only text, no link
+													if (maxLvl >= 0 && lvl + 1 >= maxLvl) {
+														li.appendChild(document.createTextNode(itemTitle));
+													}
+													else {
+														itemLink.appendChild(itemsCount);
+														li.appendChild(itemLink);
+													}
+
+													li.appendChild(this._walk(item, maxLvl, colAt, lvl + 1));
+													li.appendChild(document.createTextNode(itemIsArray ? "]" : "}"));
+
+													var list = li.querySelector("ul");
+													var itemLinkCb = function () {
+														itemLink.classList.toggle("collapsed");
+														itemsCount.classList.toggle("hide");
+														list.classList.toggle("hide");
+													};
+
+													// hide/show
+													itemLink.addEventListener("click", itemLinkCb);
+
+													// collapse lower level
+													if (colAt >= 0 && lvl + 1 >= colAt) {
+														itemLinkCb();
+													}
+												}
+											}
 										}
+										// simple values
 										else {
-											itemLink.appendChild(itemsCount);
-											li.appendChild(itemLink);
+											// object keys with key:
+											if (!isArray) {
+												li.appendChild(document.createTextNode(key + ": "));
+											}
+
+											// recursive
+											li.appendChild(this._walk(item, maxLvl, colAt, lvl + 1));
 										}
 
-										li.appendChild(this._walk(item, maxLvl, colAt, lvl + 1));
-										li.appendChild(document.createTextNode(itemIsArray ? "]" : "}"));
-										
-										var list = li.querySelector("ul");
-										var itemLinkCb = function() {
-											itemLink.classList.toggle("collapsed");
-											itemsCount.classList.toggle("hide");
-											list.classList.toggle("hide");
-										};
-
-										// hide/show
-										itemLink.addEventListener("click", itemLinkCb);
-
-										// collapse lower level
-										if (colAt >= 0 && lvl + 1 >= colAt) {
-											itemLinkCb();
+										// add comma to the end
+										if (ind < len) {
+											li.appendChild(document.createTextNode(","));
 										}
+
+										ulList.appendChild(li);
+									}, this);
+
+									frag.appendChild(ulList);
+								}
+								else if (items.length && isMaxLvl) {
+									var itemsCount = this._createItemsCount(items.length);
+									itemsCount.classList.remove("hide");
+
+									frag.appendChild(itemsCount);
+								}
+
+								if (lvl === 0) {
+									// empty root
+									if (!items.length) {
+										var itemsCount = this._createItemsCount(0);
+										itemsCount.classList.remove("hide");
+
+										frag.appendChild(itemsCount);
+									}
+
+									// root cover
+									frag.appendChild(document.createTextNode(isArray ? "]" : "}"));
+
+									// collapse
+									if (isCollapse) {
+										frag.querySelector("ul").classList.add("hide");
 									}
 								}
+								break;
 							}
+
+						default:
 							// simple values
-							else {
-								// object keys with key:
-								if (!isArray) {
-									li.appendChild(document.createTextNode(key + ": "));
-								}
-
-								// recursive
-								li.appendChild(this._walk(item, maxLvl, colAt, lvl + 1));
-							}
-
-							// add comma to the end
-							if (ind < len) {
-								li.appendChild(document.createTextNode(","));
-							}
-
-							ulList.appendChild(li);
-						}, this);
-
-						frag.appendChild(ulList);
-					}
-					else if (items.length && isMaxLvl) {
-						var itemsCount = this._createItemsCount(items.length);
-						itemsCount.classList.remove("hide");
-
-						frag.appendChild(itemsCount);
+							frag.appendChild(this._createSimple(value));
+							break;
 					}
 
-					if (lvl === 0) {
-						// empty root
-						if (!items.length) {
-							var itemsCount = this._createItemsCount(0);
-							itemsCount.classList.remove("hide");
+					return frag;
+				};
 
-							frag.appendChild(itemsCount);
-						}
+				/**
+				 * Create simple value (no object|array).
+				 * 
+				 * @param  {Number|String|null|undefined|Date} value Input value
+				 * @return {Element}
+				 */
+				JSONViewer.prototype._createSimple = function (value) {
+					var spanEl = document.createElement("span");
+					var type = typeof value;
+					var txt = value;
 
-						// root cover
-						frag.appendChild(document.createTextNode(isArray ? "]" : "}"));
-
-						// collapse
-						if (isCollapse) {
-							frag.querySelector("ul").classList.add("hide");
-						}
+					if (type === "string") {
+						txt = '"' + value + '"';
 					}
-					break;
-				}
+					else if (value === null) {
+						type = "null";
+						txt = "null";
+					}
+					else if (value === undefined) {
+						txt = "undefined";
+					}
+					else if (value instanceof Date) {
+						type = "date";
+						txt = value.toString();
+					}
 
-			default:
-				// simple values
-				frag.appendChild(this._createSimple(value));
-				break;
+					spanEl.classList.add("type-" + type);
+					spanEl.innerHTML = txt;
+
+					return spanEl;
+				};
+
+				/**
+				 * Create items count element.
+				 * 
+				 * @param  {Number} count Items count
+				 * @return {Element}
+				 */
+				JSONViewer.prototype._createItemsCount = function (count) {
+					var itemsCount = document.createElement("span");
+					itemsCount.classList.add("items-ph");
+					itemsCount.classList.add("hide");
+					itemsCount.innerHTML = this._getItemsTitle(count);
+
+					return itemsCount;
+				};
+
+				/**
+				 * Create clickable link.
+				 * 
+				 * @param  {String} title Link title
+				 * @return {Element}
+				 */
+				JSONViewer.prototype._createLink = function (title) {
+					var linkEl = document.createElement("a");
+					linkEl.classList.add("list-link");
+					linkEl.href = "javascript:void(0)";
+					linkEl.innerHTML = title || "";
+
+					return linkEl;
+				};
+
+				/**
+				 * Get correct item|s title for count.
+				 * 
+				 * @param  {Number} count Items count
+				 * @return {String}
+				 */
+				JSONViewer.prototype._getItemsTitle = function (count) {
+					var itemsTxt = count > 1 || count === 0 ? "items" : "item";
+
+					return (count + " " + itemsTxt);
+				};
+
+				return JSONViewer;
+			})();
+		</script>
+	</head>
+
+	<body>
+		<div id="window">
+			<div id="buttons">
+				<button id="loadButton" class="buttons load">Load</button>
+				<button id="collapseButton" class="buttons collapse">Collapse</button>
+				<button id="expandButton" class="buttons expand">Expand</button>
+				<button id="resetButton" class="buttons reset">Reset</button>
+			</div>
+
+			<div id="title">JSON Viewer by Poopcode</div>
+			<textarea id="textarea" placeholder="Paste your string here.."></textarea>
+			<div id="json"></div>
+		</div>
+	</body>
+
+	</html>
+	<script id="rendered-js">
+		var jsonObj = {};
+		var jsonViewer = new JSONViewer();
+
+
+		var textarea = document.getElementById("textarea");
+		textarea.onpaste = handlePaste;
+		textarea.value = ""
+
+
+
+
+		document.querySelector("#json").appendChild(jsonViewer.getContainer());
+
+
+
+		// textarea value to JSON object
+		var setJSON = function () {
+			try {
+				var value = textarea.value;
+				jsonObj = JSON.parse(value);
+				document.getElementById("json").style.display = "block";
+				document.getElementById("textarea").style.display = "none";
+			}
+			catch (err) {
+				document.getElementById("json").style.display = "none";
+				//    document.getElementById("textarea").style.background = "#FF6347";
+				//    alert(err);
+			}
+		};
+
+		// load default value
+		setJSON();
+
+		var loadJsonBtn = document.getElementById("loadButton");
+		loadJsonBtn.style.display = "none";
+		var collapseBtn = document.getElementById("collapseButton");
+		var expandBtn = document.getElementById("expandButton");
+		var resetBtn = document.getElementById("resetButton");
+
+		function handlePaste(event) {
+			let paste = (event.clipboardData || window.clipboardData).getData('text');
+// 			alert('Pasted!\n' + paste);
+			 try {
+				 if(paste) {
+				jsonObj = JSON.parse(paste);
+				jsonViewer.showJSON(jsonObj);
+				document.getElementById("json").style.display = "block";
+				document.getElementById("textarea").style.display = "none";
+				 }
+			}
+			catch (err) {
+				document.getElementById("json").style.display = "none";
+				//    document.getElementById("textarea").style.background = "#FF6347";
+				//    alert(err);
+			}
 		}
 
-		return frag;
-	};
+		loadJsonBtn.addEventListener("click", function () {
+			// setJSON();
+			jsonViewer.showJSON(jsonObj);
+		});
 
-	/**
-	 * Create simple value (no object|array).
-	 * 
-	 * @param  {Number|String|null|undefined|Date} value Input value
-	 * @return {Element}
-	 */
-	JSONViewer.prototype._createSimple = function(value) {
-		var spanEl = document.createElement("span");
-		var type = typeof value;
-		var txt = value;
+		collapseBtn.addEventListener("click", function () {
+			jsonViewer.showJSON(jsonObj, null, 1);
+		});
 
-		if (type === "string") {
-			txt = '"' + value + '"';
-		}
-		else if (value === null) {
-			type = "null";
-			txt = "null";
-		}
-		else if (value === undefined) {
-			txt = "undefined";
-		}
-		else if (value instanceof Date) {
-			type = "date";
-			txt = value.toString();
-		}
+		expandBtn.addEventListener("click", function () {
+			// setJSON();
+			jsonViewer.showJSON(jsonObj);
+		});
 
-		spanEl.classList.add("type-" + type);
-		spanEl.innerHTML = txt;
-
-		return spanEl;
-	};
-
-	/**
-	 * Create items count element.
-	 * 
-	 * @param  {Number} count Items count
-	 * @return {Element}
-	 */
-	JSONViewer.prototype._createItemsCount = function(count) {
-		var itemsCount = document.createElement("span");
-		itemsCount.classList.add("items-ph");
-		itemsCount.classList.add("hide");
-		itemsCount.innerHTML = this._getItemsTitle(count);
-
-		return itemsCount;
-	};
-
-	/**
-	 * Create clickable link.
-	 * 
-	 * @param  {String} title Link title
-	 * @return {Element}
-	 */
-	JSONViewer.prototype._createLink = function(title) {
-		var linkEl = document.createElement("a");
-		linkEl.classList.add("list-link");
-		linkEl.href = "javascript:void(0)";
-		linkEl.innerHTML = title || "";
-
-		return linkEl;
-	};
-
-	/**
-	 * Get correct item|s title for count.
-	 * 
-	 * @param  {Number} count Items count
-	 * @return {String}
-	 */
-	JSONViewer.prototype._getItemsTitle = function(count) {
-		var itemsTxt = count > 1 || count === 0 ? "items" : "item";
-
-		return (count + " " + itemsTxt);
-	};
-
-	return JSONViewer;
-})();
-  </script>
-</head>
-<body>
-<div id="window">
-  <div id="buttons">
-    <button id="loadButton" class="buttons load">Load</button>
-    <button id="collapseButton" class="buttons collapse">Collapse</button>
-    <button id="expandButton" class="buttons expand">Expand</button>
-    <button id="resetButton" class="buttons reset">Reset</button>
-  </div>
-  
-  <div id="title">JSON Viewer by Poopcode</div>
-  <textarea id="textarea"></textarea>
-  <div id="json"></div>
-</div>
-</body>
-</html>
-<script id="rendered-js">
-var jsonObj = {};
-var jsonViewer = new JSONViewer();
-
-
-var textarea = document.getElementById("textarea");
-textarea.value = ""
-
-
-
-
-document.querySelector("#json").appendChild(jsonViewer.getContainer());
-
-
-
-// textarea value to JSON object
-var setJSON = function () {
-  try {
-    var value = textarea.value;
-    jsonObj = JSON.parse(value);
-    document.getElementById("json").style.display = "block";
-    document.getElementById("textarea").style.display = "none";
-  }
-  catch (err) {
-    document.getElementById("json").style.display = "none";
-//    document.getElementById("textarea").style.background = "#FF6347";
-//    alert(err);
-  }
-};
-
-// load default value
-setJSON();
-
-var loadJsonBtn = document.getElementById("loadButton");
-var collapseBtn = document.getElementById("collapseButton");
-var expandBtn = document.getElementById("expandButton");
-var resetBtn = document.getElementById("resetButton");
-
-loadJsonBtn.addEventListener("click", function () {
-  setJSON();
-  jsonViewer.showJSON(jsonObj);
-});
-
-collapseBtn.addEventListener("click", function () {
-  jsonViewer.showJSON(jsonObj, null, 1);
-});
-
-expandBtn.addEventListener("click", function () {
-  setJSON();
-  jsonViewer.showJSON(jsonObj);
-});
-
-resetBtn.addEventListener("click", function () {
-  document.getElementById("textarea").value = "";
-    document.getElementById("textarea").style.display = "block";
-    document.getElementById("json").style.display = "none";
-});
+		resetBtn.addEventListener("click", function () {
+			document.getElementById("textarea").value = "";
+			document.getElementById("textarea").style.display = "block";
+			document.getElementById("json").style.display = "none";
+		});
 //# sourceURL=pen.js
-    </script>
+	</script>
 </body>
-</html>
 
+</html>
