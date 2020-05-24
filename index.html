@@ -14,6 +14,8 @@
 		sizes="192x192" />
 
 	<title>JSON Formatter with Tree View</title>
+	<meta name="Keywords"
+		content="JSON Beautifier, json, formatter, online, format, parser, javascript, javascript object notation, treeview, open source, free, json parser, json parser online, json formatter, online json formatter, json formatter online, format json, format json online, json format, json beautifier, json beautify, json beautifier online, online json beautifier, json code beautifier, json formatter online free, json beauty, json viewer, json web viewer, online json viewer, json viewer online, json analyser, JSON Checker, jsonlint, json pretty print, json minifier, json tree viewer online, json online, Json formatting, Online json formatting, Json online analysis, Json formatting tool, json prettifier, json linter, online json parser, pretty json, make json pretty, json editor online, json creator, json 在线, json 格式 化, 在线 json 格式 化, json 在线 解析, json 在线 格式 化, json 格式 化 工具">
 	<style>
 		#window {
 			width: 96%;
@@ -137,7 +139,7 @@
 			border: 6px solid #05bcaf;
 			border-radius: 0.4em;
 			background: #ebecec;
-			color: #656D78;
+			color: #3a3a3a;
 			font-weight: 300;
 		}
 
@@ -149,7 +151,7 @@
 			border-bottom: 6px solid #05bcaf;
 			border-radius: 0.4em;
 			background: #ebecec;
-			color: #656D78;
+			color: #3a3a3a;
 			font-weight: 300;
 		}
 
@@ -165,7 +167,7 @@
 			overflow: scroll;
 			height: 96%;
 			width: 96%;
-			color: #656D78;
+			color: #3a3a3a;
 			padding: 20px 20px 20px 20px;
 			background-color: #ebecec;
 			border: 6px solid #3a3a3a;
@@ -188,7 +190,7 @@
 
 		.json-viewer ul li .type-string,
 		.json-viewer ul li .type-date {
-			color: #05bcaf;
+			color: #e87376;
 		}
 
 		.json-viewer ul li .type-boolean {
@@ -197,7 +199,7 @@
 		}
 
 		.json-viewer ul li .type-number {
-			color: #e87376;
+			color: #05bcaf;
 		}
 
 		.json-viewer ul li .type-null {
@@ -205,7 +207,7 @@
 		}
 
 		.json-viewer a.list-link {
-			color: #656D78;
+			color: #3a3a3a;
 			text-decoration: none;
 			position: relative;
 		}
@@ -540,16 +542,28 @@
 	</head>
 
 	<body>
+		
 		<div id="window">
 			<div id="buttons">
-				<button id="loadButton" class="buttons load">Load</button>
+				<button id="copyButton" class="buttons copy" style="display: none; float:left; margin-right:5px">Copy JSON</button>
+				<!-- <button id="loadButton" class="buttons load">Load</button> -->
 				<button id="collapseButton" class="buttons collapse">Collapse</button>
 				<button id="expandButton" class="buttons expand">Expand</button>
 				<button id="resetButton" class="buttons reset">Reset</button>
 			</div>
 
 			<div id="title">JSON Viewer by Poopcode</div>
+			<div style="background: #d9d9d9">
+			<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+			<ins class="adsbygoogle" style="display:block" data-ad-test="on" data-ad-client="ca-pub-0000000000000000"
+				data-ad-slot="0000000000" data-ad-format="auto"></ins>
+			<script>
+				(adsbygoogle = window.adsbygoogle || []).push({});
+			</script>
+			</div>
 			<textarea id="textarea" placeholder="Paste your string here.."></textarea>
+			<div>
+			
 			<div id="json"></div>
 		</div>
 	</body>
@@ -589,22 +603,24 @@
 		// load default value
 		setJSON();
 
-		var loadJsonBtn = document.getElementById("loadButton");
-		loadJsonBtn.style.display = "none";
+		var copyBtn = document.getElementById("copyButton");
+		//var loadJsonBtn = document.getElementById("loadButton");
+		//loadJsonBtn.style.display = "none";
 		var collapseBtn = document.getElementById("collapseButton");
 		var expandBtn = document.getElementById("expandButton");
 		var resetBtn = document.getElementById("resetButton");
 
 		function handlePaste(event) {
 			let paste = (event.clipboardData || window.clipboardData).getData('text');
-// 			alert('Pasted!\n' + paste);
-			 try {
-				 if(paste) {
-				jsonObj = JSON.parse(paste);
-				jsonViewer.showJSON(jsonObj);
-				document.getElementById("json").style.display = "block";
-				document.getElementById("textarea").style.display = "none";
-				 }
+			// alert('Pasted!\n' + paste);
+			try {
+				if (paste) {
+					jsonObj = JSON.parse(paste);
+					jsonViewer.showJSON(jsonObj);
+					document.getElementById("json").style.display = "block";
+					copyBtn.style.display = "block";
+					document.getElementById("textarea").style.display = "none";
+				}
 			}
 			catch (err) {
 				document.getElementById("json").style.display = "none";
@@ -613,10 +629,20 @@
 			}
 		}
 
-		loadJsonBtn.addEventListener("click", function () {
+		copyBtn.addEventListener("click", function () {
 			// setJSON();
 			jsonViewer.showJSON(jsonObj);
+			try {
+			navigator.clipboard.writeText(JSON.stringify(jsonObj,null,4));
+			} catch(err) {
+				console.log("Error while copying JSON to clipboard -- " + err + "JSON Obj ----" + jsonObj);
+			}
 		});
+
+		// loadJsonBtn.addEventListener("click", function () {
+		// 	// setJSON();
+		// 	jsonViewer.showJSON(jsonObj);
+		// });
 
 		collapseBtn.addEventListener("click", function () {
 			jsonViewer.showJSON(jsonObj, null, 1);
@@ -631,6 +657,7 @@
 			document.getElementById("textarea").value = "";
 			document.getElementById("textarea").style.display = "block";
 			document.getElementById("json").style.display = "none";
+			copyBtn.style.display = "none";
 		});
 //# sourceURL=pen.js
 	</script>
