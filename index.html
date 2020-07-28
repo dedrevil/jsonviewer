@@ -237,6 +237,40 @@
 		.json-viewer .items-ph:hover {
 			text-decoration: underline;
 		}
+		
+			.tooltip {
+	  position: relative;
+	  display: inline-block;
+	}
+
+	.tooltip .tooltiptext {
+	  visibility: hidden;
+	  width: 120px;
+	  background-color: black;
+	  color: #fff;
+	  text-align: center;
+	  border-radius: 6px;
+	  padding: 5px 0;
+	  position: absolute;
+	  z-index: 1;
+	  top: -5px;
+	  left: 110%;
+	}
+
+	.tooltip .tooltiptext::after {
+	  content: "";
+	  position: absolute;
+	  top: 50%;
+	  right: 100%;
+	  margin-top: -5px;
+	  border-width: 5px;
+	  border-style: solid;
+	  border-color: transparent black transparent transparent;
+	}
+
+	.tooltip:hover .tooltiptext {
+	  visibility: visible;
+	}
 	</style>
 	<script>
 		window.console = window.console || function (t) { };
@@ -246,6 +280,7 @@
 			window.parent.postMessage("resize", "*");
 		}
 	</script>
+	<script data-ad-client="ca-pub-3194348739260514" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 </head>
 
 <body translate="no">
@@ -545,7 +580,7 @@
 		
 		<div id="window">
 			<div id="buttons">
-				<button id="copyButton" class="buttons copy" style="display: none; float:left; margin-right:5px">Copy JSON</button>
+				<div class="tooltip"><button id="copyButton" class="buttons copy" style="display: none; float:left; margin-right:5px"><span class="" id="myTooltip"></span>Copy JSON</button></div>
 				<!-- <button id="loadButton" class="buttons load">Load</button> -->
 				<button id="collapseButton" class="buttons collapse">Collapse</button>
 				<button id="expandButton" class="buttons expand">Expand</button>
@@ -623,12 +658,28 @@
 
 		copyBtn.addEventListener("click", function () {
 			// setJSON();
+			var tooltip = document.getElementById("myTooltip");
+	  		
 			jsonViewer.showJSON(jsonObj);
 			try {
 			navigator.clipboard.writeText(JSON.stringify(jsonObj,null,4));
+			tooltip.className = 'tooltiptext';
+			tooltip.style.display = "block";
+			tooltip.innerHTML = "Copied!";
 			} catch(err) {
+			tooltip.innerHTML = "Uh ho, it's not a JSON!";
 				console.log("Error while copying JSON to clipboard -- " + err + "JSON Obj ----" + jsonObj);
 			}
+			
+		});
+		
+		
+		copyBtn.addEventListener("mouseleave", function () {
+			// setJSON();
+			var tooltip = document.getElementById("myTooltip");
+			tooltip.innerHTML = "";
+			tooltip.style.display = "none";
+			
 		});
 
 		// loadJsonBtn.addEventListener("click", function () {
