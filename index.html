@@ -30,6 +30,10 @@
 			cursor: default;
 			box-shadow: 0 0 16px -2px rgba(50, 50, 50, .5);
 		}
+		
+		#adcenter {
+ margin: 8px 0; text-align: center; clear: both; display: flex; justify-content: center; flex-direction: column; align-items: center; background-color: #3a3a3a;
+}
 
 		#buttons {
 			float: right;
@@ -287,307 +291,27 @@
 
 	<head>
 		<script>
-			JSONViewer = (function () {
-				var JSONViewer = function () {
-					this._dom = {};
-					this._dom.container = document.createElement("pre");
-					this._dom.container.classList.add("json-viewer");
-				};
-				JSONViewer.prototype.showJSON = function (json, maxLvl, colAt) {
-					maxLvl = typeof maxLvl === "number" ? maxLvl : -1; // max level
-					colAt = typeof colAt === "number" ? colAt : -1; // collapse at
-
-					var jsonData = this._processInput(json);
-					var walkEl = this._walk(jsonData, maxLvl, colAt, 0);
-
-					this._dom.container.innerHTML = "";
-					this._dom.container.appendChild(walkEl);
-				};
-
-				/**
-				 * Get container with pre object - this container is used for visualise JSON data.
-				 * 
-				 * @return {Element}
-				 */
-				JSONViewer.prototype.getContainer = function () {
-					return this._dom.container;
-				};
-
-				/**
-				 * Process input JSON - throws exception for unrecognized input.
-				 * 
-				 * @param {Object|Array} json Input value
-				 * @return {Object|Array}
-				 */
-				JSONViewer.prototype._processInput = function (json) {
-					if (json && typeof json === "object") {
-						return json;
-					}
-					else {
-						throw "Input value is not object or array!";
-					}
-				};
-
-				/**
-				 * Recursive walk for input value.
-				 * 
-				 * @param {Object|Array} value Input value
-				 * @param {Number} maxLvl Process only to max level, where 0..n, -1 unlimited
-				 * @param {Number} colAt Collapse at level, where 0..n, -1 unlimited
-				 * @param {Number} lvl Current level
-				 */
-				JSONViewer.prototype._walk = function (value, maxLvl, colAt, lvl) {
-					var frag = document.createDocumentFragment();
-					var isMaxLvl = maxLvl >= 0 && lvl >= maxLvl;
-					var isCollapse = colAt >= 0 && lvl >= colAt;
-
-					switch (typeof value) {
-						case "object":
-							if (value) {
-								var isArray = Array.isArray(value);
-								var items = isArray ? value : Object.keys(value);
-
-								if (lvl === 0) {
-									// root level
-									var rootCount = this._createItemsCount(items.length);
-									// hide/show
-									var rootLink = this._createLink(isArray ? "[" : "{");
-
-									if (items.length) {
-										rootLink.addEventListener("click", function () {
-											if (isMaxLvl) return;
-
-											rootLink.classList.toggle("collapsed");
-											rootCount.classList.toggle("hide");
-
-											// main list
-											this._dom.container.querySelector("ul").classList.toggle("hide");
-										}.bind(this));
-
-										if (isCollapse) {
-											rootLink.classList.add("collapsed");
-											rootCount.classList.remove("hide");
-										}
-									}
-									else {
-										rootLink.classList.add("empty");
-									}
-
-									rootLink.appendChild(rootCount);
-									frag.appendChild(rootLink);
-								}
-
-								if (items.length && !isMaxLvl) {
-									var len = items.length - 1;
-									var ulList = document.createElement("ul");
-									ulList.setAttribute("data-level", lvl);
-									ulList.classList.add("type-" + (isArray ? "array" : "object"));
-
-									items.forEach(function (key, ind) {
-										var item = isArray ? key : value[key];
-										var li = document.createElement("li");
-
-										if (typeof item === "object") {
-											var isEmpty = false;
-
-											// null && date
-											if (!item || item instanceof Date) {
-												li.appendChild(document.createTextNode(isArray ? "" : key + ": "));
-												li.appendChild(this._createSimple(item ? item : null));
-											}
-											// array & object
-											else {
-												var itemIsArray = Array.isArray(item);
-												var itemLen = itemIsArray ? item.length : Object.keys(item).length;
-
-												// empty
-												if (!itemLen) {
-													li.appendChild(document.createTextNode(key + ": " + (itemIsArray ? "[]" : "{}")));
-												}
-												else {
-													// 1+ items
-													var itemTitle = (typeof key === "string" ? key + ": " : "") + (itemIsArray ? "[" : "{");
-													var itemLink = this._createLink(itemTitle);
-													var itemsCount = this._createItemsCount(itemLen);
-
-													// maxLvl - only text, no link
-													if (maxLvl >= 0 && lvl + 1 >= maxLvl) {
-														li.appendChild(document.createTextNode(itemTitle));
-													}
-													else {
-														itemLink.appendChild(itemsCount);
-														li.appendChild(itemLink);
-													}
-
-													li.appendChild(this._walk(item, maxLvl, colAt, lvl + 1));
-													li.appendChild(document.createTextNode(itemIsArray ? "]" : "}"));
-
-													var list = li.querySelector("ul");
-													var itemLinkCb = function () {
-														itemLink.classList.toggle("collapsed");
-														itemsCount.classList.toggle("hide");
-														list.classList.toggle("hide");
-													};
-
-													// hide/show
-													itemLink.addEventListener("click", itemLinkCb);
-
-													// collapse lower level
-													if (colAt >= 0 && lvl + 1 >= colAt) {
-														itemLinkCb();
-													}
-												}
-											}
-										}
-										// simple values
-										else {
-											// object keys with key:
-											if (!isArray) {
-												li.appendChild(document.createTextNode(key + ": "));
-											}
-
-											// recursive
-											li.appendChild(this._walk(item, maxLvl, colAt, lvl + 1));
-										}
-
-										// add comma to the end
-										if (ind < len) {
-											li.appendChild(document.createTextNode(","));
-										}
-
-										ulList.appendChild(li);
-									}, this);
-
-									frag.appendChild(ulList);
-								}
-								else if (items.length && isMaxLvl) {
-									var itemsCount = this._createItemsCount(items.length);
-									itemsCount.classList.remove("hide");
-
-									frag.appendChild(itemsCount);
-								}
-
-								if (lvl === 0) {
-									// empty root
-									if (!items.length) {
-										var itemsCount = this._createItemsCount(0);
-										itemsCount.classList.remove("hide");
-
-										frag.appendChild(itemsCount);
-									}
-
-									// root cover
-									frag.appendChild(document.createTextNode(isArray ? "]" : "}"));
-
-									// collapse
-									if (isCollapse) {
-										frag.querySelector("ul").classList.add("hide");
-									}
-								}
-								break;
-							}
-
-						default:
-							// simple values
-							frag.appendChild(this._createSimple(value));
-							break;
-					}
-
-					return frag;
-				};
-
-				/**
-				 * Create simple value (no object|array).
-				 * 
-				 * @param  {Number|String|null|undefined|Date} value Input value
-				 * @return {Element}
-				 */
-				JSONViewer.prototype._createSimple = function (value) {
-					var spanEl = document.createElement("span");
-					var type = typeof value;
-					var txt = value;
-
-					if (type === "string") {
-						txt = '"' + value + '"';
-					}
-					else if (value === null) {
-						type = "null";
-						txt = "null";
-					}
-					else if (value === undefined) {
-						txt = "undefined";
-					}
-					else if (value instanceof Date) {
-						type = "date";
-						txt = value.toString();
-					}
-
-					spanEl.classList.add("type-" + type);
-					spanEl.innerHTML = txt;
-
-					return spanEl;
-				};
-
-				/**
-				 * Create items count element.
-				 * 
-				 * @param  {Number} count Items count
-				 * @return {Element}
-				 */
-				JSONViewer.prototype._createItemsCount = function (count) {
-					var itemsCount = document.createElement("span");
-					itemsCount.classList.add("items-ph");
-					itemsCount.classList.add("hide");
-					itemsCount.innerHTML = this._getItemsTitle(count);
-
-					return itemsCount;
-				};
-
-				/**
-				 * Create clickable link.
-				 * 
-				 * @param  {String} title Link title
-				 * @return {Element}
-				 */
-				JSONViewer.prototype._createLink = function (title) {
-					var linkEl = document.createElement("a");
-					linkEl.classList.add("list-link");
-					linkEl.href = "javascript:void(0)";
-					linkEl.innerHTML = title || "";
-
-					return linkEl;
-				};
-
-				/**
-				 * Get correct item|s title for count.
-				 * 
-				 * @param  {Number} count Items count
-				 * @return {String}
-				 */
-				JSONViewer.prototype._getItemsTitle = function (count) {
-					var itemsTxt = count > 1 || count === 0 ? "items" : "item";
-
-					return (count + " " + itemsTxt);
-				};
-
-				return JSONViewer;
-			})();
+			JSONViewer=function(){var e=function(){this._dom={},this._dom.container=document.createElement("pre"),this._dom.container.classList.add("json-viewer")};return e.prototype.showJSON=function(e,t,n){t="number"==typeof t?t:-1,n="number"==typeof n?n:-1;var i=this._processInput(e),a=this._walk(i,t,n,0);this._dom.container.innerHTML="",this._dom.container.appendChild(a)},e.prototype.getContainer=function(){return this._dom.container},e.prototype._processInput=function(e){if(e&&"object"==typeof e)return e;throw"Input value is not object or array!"},e.prototype._walk=function(e,t,n,i){var a=document.createDocumentFragment(),s=t>=0&&i>=t,r=n>=0&&i>=n;switch(typeof e){case"object":if(e){var d=Array.isArray(e),o=d?e:Object.keys(e);if(0===i){var c=this._createItemsCount(o.length),l=this._createLink(d?"[":"{");o.length?(l.addEventListener("click",function(){s||(l.classList.toggle("collapsed"),c.classList.toggle("hide"),this._dom.container.querySelector("ul").classList.toggle("hide"))}.bind(this)),r&&(l.classList.add("collapsed"),c.classList.remove("hide"))):l.classList.add("empty"),l.appendChild(c),a.appendChild(l)}if(o.length&&!s){var p=o.length-1,h=document.createElement("ul");h.setAttribute("data-level",i),h.classList.add("type-"+(d?"array":"object")),o.forEach(function(a,s){var r=d?a:e[a],o=document.createElement("li");if("object"==typeof r){if(!r||r instanceof Date)o.appendChild(document.createTextNode(d?"":a+": ")),o.appendChild(this._createSimple(r||null));else{var c=Array.isArray(r),l=c?r.length:Object.keys(r).length;if(l){var u=("string"==typeof a?a+": ":"")+(c?"[":"{"),m=this._createLink(u),f=this._createItemsCount(l);t>=0&&i+1>=t?o.appendChild(document.createTextNode(u)):(m.appendChild(f),o.appendChild(m)),o.appendChild(this._walk(r,t,n,i+1)),o.appendChild(document.createTextNode(c?"]":"}"));var y=o.querySelector("ul"),g=function(){m.classList.toggle("collapsed"),f.classList.toggle("hide"),y.classList.toggle("hide")};m.addEventListener("click",g),n>=0&&i+1>=n&&g()}else o.appendChild(document.createTextNode(a+": "+(c?"[]":"{}")))}}else d||o.appendChild(document.createTextNode(a+": ")),o.appendChild(this._walk(r,t,n,i+1));s<p&&o.appendChild(document.createTextNode(",")),h.appendChild(o)},this),a.appendChild(h)}else if(o.length&&s){(u=this._createItemsCount(o.length)).classList.remove("hide"),a.appendChild(u)}if(0===i){var u;if(!o.length)(u=this._createItemsCount(0)).classList.remove("hide"),a.appendChild(u);a.appendChild(document.createTextNode(d?"]":"}")),r&&a.querySelector("ul").classList.add("hide")}break}default:a.appendChild(this._createSimple(e))}return a},e.prototype._createSimple=function(e){var t=document.createElement("span"),n=typeof e,i=e;return"string"===n?i='"'+e+'"':null===e?(n="null",i="null"):void 0===e?i="undefined":e instanceof Date&&(n="date",i=e.toString()),t.classList.add("type-"+n),t.innerHTML=i,t},e.prototype._createItemsCount=function(e){var t=document.createElement("span");return t.classList.add("items-ph"),t.classList.add("hide"),t.innerHTML=this._getItemsTitle(e),t},e.prototype._createLink=function(e){var t=document.createElement("a");return t.classList.add("list-link"),t.href="javascript:void(0)",t.innerHTML=e||"",t},e.prototype._getItemsTitle=function(e){return e+" "+(e>1||0===e?"items":"item")},e}();
 		</script>
 	</head>
 
 	<body>
+		
+				<div align="center"> 
 		<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 <!-- poopcodesidebar -->
 <ins class="adsbygoogle"
-     style="display:block"
+     style="display:inline-block;width:970px;height:90px"
      data-ad-client="ca-pub-3194348739260514"
-     data-ad-slot="2142264606"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
+     data-ad-slot="2142264606"></ins>
 <script>
      (adsbygoogle = window.adsbygoogle || []).push({});
 </script>
+		</div>
+
 		<div id="window">
+
+		
 			<div id="buttons">
 				<div class="tooltip"><button id="copyButton" class="buttons copy" style="display: none; float:left; margin-right:5px"><span class="" id="myTooltip"></span>Copy JSON</button></div>
 				<!-- <button id="loadButton" class="buttons load">Load</button> -->
@@ -601,117 +325,32 @@
 			<div>
 			
 			<div id="json"></div>
+					<div align="center"> 
+		<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- poopcodesidebar -->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:728px;height:90px"
+     data-ad-client="ca-pub-3194348739260514"
+     data-ad-slot="2142264606"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+	<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- poopcodesidebar -->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:728px;height:90px"
+     data-ad-client="ca-pub-3194348739260514"
+     data-ad-slot="2142264606"></ins>
+<script>
+     (adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+		</div>
 		</div>
 	</body>
 
 	</html>
 	<script id="rendered-js">
-		var jsonObj = {};
-		var jsonViewer = new JSONViewer();
-
-
-		var textarea = document.getElementById("textarea");
-		textarea.onpaste = handlePaste;
-		textarea.value = ""
-
-
-
-
-		document.querySelector("#json").appendChild(jsonViewer.getContainer());
-
-
-
-		// textarea value to JSON object
-		var setJSON = function () {
-			try {
-				var value = textarea.value;
-				jsonObj = JSON.parse(value);
-				document.getElementById("json").style.display = "block";
-				document.getElementById("textarea").style.display = "none";
-			}
-			catch (err) {
-				document.getElementById("json").style.display = "none";
-				//    document.getElementById("textarea").style.background = "#FF6347";
-				//    alert(err);
-			}
-		};
-
-		// load default value
-		setJSON();
-
-		var copyBtn = document.getElementById("copyButton");
-		//var loadJsonBtn = document.getElementById("loadButton");
-		//loadJsonBtn.style.display = "none";
-		var collapseBtn = document.getElementById("collapseButton");
-		var expandBtn = document.getElementById("expandButton");
-		var resetBtn = document.getElementById("resetButton");
-
-		function handlePaste(event) {
-			let paste = (event.clipboardData || window.clipboardData).getData('text');
-			// alert('Pasted!\n' + paste);
-			try {
-				if (paste) {
-					jsonObj = JSON.parse(paste);
-					jsonViewer.showJSON(jsonObj);
-					document.getElementById("json").style.display = "block";
-					copyBtn.style.display = "block";
-					document.getElementById("textarea").style.display = "none";
-				}
-			}
-			catch (err) {
-				document.getElementById("json").style.display = "none";
-				//    document.getElementById("textarea").style.background = "#FF6347";
-				//    alert(err);
-			}
-		}
-
-		copyBtn.addEventListener("click", function () {
-			// setJSON();
-			var tooltip = document.getElementById("myTooltip");
-	  		
-			jsonViewer.showJSON(jsonObj);
-			try {
-			navigator.clipboard.writeText(JSON.stringify(jsonObj,null,4));
-			tooltip.className = 'tooltiptext';
-			tooltip.style.display = "block";
-			tooltip.innerHTML = "Copied!";
-			} catch(err) {
-			tooltip.innerHTML = "Uh ho, it's not a JSON!";
-				console.log("Error while copying JSON to clipboard -- " + err + "JSON Obj ----" + jsonObj);
-			}
-			
-		});
-		
-		
-		copyBtn.addEventListener("mouseleave", function () {
-			// setJSON();
-			var tooltip = document.getElementById("myTooltip");
-			tooltip.innerHTML = "";
-			tooltip.style.display = "none";
-			
-		});
-
-		// loadJsonBtn.addEventListener("click", function () {
-		// 	// setJSON();
-		// 	jsonViewer.showJSON(jsonObj);
-		// });
-
-		collapseBtn.addEventListener("click", function () {
-			jsonViewer.showJSON(jsonObj, null, 1);
-		});
-
-		expandBtn.addEventListener("click", function () {
-			// setJSON();
-			jsonViewer.showJSON(jsonObj);
-		});
-
-		resetBtn.addEventListener("click", function () {
-			document.getElementById("textarea").value = "";
-			document.getElementById("textarea").style.display = "block";
-			document.getElementById("json").style.display = "none";
-			copyBtn.style.display = "none";
-		});
-//# sourceURL=pen.js
+var jsonObj={},jsonViewer=new JSONViewer,textarea=document.getElementById("textarea");textarea.onpaste=handlePaste,textarea.value="",document.querySelector("#json").appendChild(jsonViewer.getContainer());var setJSON=function(){try{var e=textarea.value;jsonObj=JSON.parse(e),document.getElementById("json").style.display="block",document.getElementById("textarea").style.display="none"}catch(e){document.getElementById("json").style.display="none"}};setJSON();var copyBtn=document.getElementById("copyButton"),collapseBtn=document.getElementById("collapseButton"),expandBtn=document.getElementById("expandButton"),resetBtn=document.getElementById("resetButton");function handlePaste(e){let t=(e.clipboardData||window.clipboardData).getData("text");try{t&&(jsonObj=JSON.parse(t),jsonViewer.showJSON(jsonObj),document.getElementById("json").style.display="block",copyBtn.style.display="block",document.getElementById("textarea").style.display="none")}catch(e){document.getElementById("json").style.display="none"}}copyBtn.addEventListener("click",function(){var e=document.getElementById("myTooltip");jsonViewer.showJSON(jsonObj);try{navigator.clipboard.writeText(JSON.stringify(jsonObj,null,4)),e.className="tooltiptext",e.style.display="block",e.innerHTML="Copied!"}catch(t){e.innerHTML="Uh ho, it's not a JSON!",console.log("Error while copying JSON to clipboard -- "+t+"JSON Obj ----"+jsonObj)}}),copyBtn.addEventListener("mouseleave",function(){var e=document.getElementById("myTooltip");e.innerHTML="",e.style.display="none"}),collapseBtn.addEventListener("click",function(){jsonViewer.showJSON(jsonObj,null,1)}),expandBtn.addEventListener("click",function(){jsonViewer.showJSON(jsonObj)}),resetBtn.addEventListener("click",function(){document.getElementById("textarea").value="",document.getElementById("textarea").style.display="block",document.getElementById("json").style.display="none",copyBtn.style.display="none"});
 	</script>
 </body>
 
